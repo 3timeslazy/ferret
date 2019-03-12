@@ -3,10 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
-	"github.com/MontFerret/ferret/pkg/parser/fql"
 	"os"
 	"os/signal"
 	"strings"
+
+	"github.com/MontFerret/ferret/pkg/parser/fql"
 
 	"github.com/MontFerret/ferret/pkg/compiler"
 	"github.com/MontFerret/ferret/pkg/runtime"
