@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/MontFerret/ferret/pkg/drivers"
-	"github.com/mafredri/cdp/protocol/network"
 	"math"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/MontFerret/ferret/pkg/drivers"
+	"github.com/mafredri/cdp/protocol/network"
 
 	"github.com/MontFerret/ferret/pkg/drivers/cdp/eval"
 	"github.com/MontFerret/ferret/pkg/drivers/cdp/events"
