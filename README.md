@@ -89,7 +89,6 @@ You can download latest binaries from [here](https://github.com/MontFerret/ferre
 * Chrome or Docker
 
 #### Development
-* GoDep
 * GNU Make
 * ANTLR4 >=4.7.1
 
