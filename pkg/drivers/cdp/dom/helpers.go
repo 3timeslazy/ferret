@@ -3,54 +3,35 @@ package dom
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"golang.org/x/net/html"
-	"strings"
 	"time"
-
-	"github.com/MontFerret/ferret/pkg/drivers/cdp/eval"
-	"github.com/MontFerret/ferret/pkg/drivers/cdp/templates"
-	"github.com/MontFerret/ferret/pkg/drivers/common"
-	"github.com/MontFerret/ferret/pkg/runtime/values"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/protocol/dom"
 	"github.com/mafredri/cdp/protocol/page"
 	"github.com/mafredri/cdp/protocol/runtime"
+	"golang.org/x/net/html"
+
+	"github.com/MontFerret/ferret/pkg/drivers/cdp/eval"
+	"github.com/MontFerret/ferret/pkg/drivers/cdp/templates"
+	"github.com/MontFerret/ferret/pkg/runtime/values"
 )
 
 var emptyExpires = time.Time{}
 
-// parseAttrs is a helper function that parses a given interleaved array of node attribute names and values,
-// and returns an object that represents attribute keys and values.
-func parseAttrs(attrs []string) *values.Object {
-	var attr values.String
+// traverseAttrs is a helper function that parses a given interleaved array of node attribute names and values,
+// and calls a given attribute on each key-value pair
+func traverseAttrs(attrs []string, predicate func(name, value string) bool) {
+	count := len(attrs)
 
-	res := values.NewObject()
-
-	for _, el := range attrs {
-		el = strings.TrimSpace(el)
-		str := values.NewString(el)
-
-		if common.IsAttribute(el) {
-			attr = str
-			res.Set(str, values.EmptyString)
-		} else {
-			current, ok := res.Get(attr)
-
-			if ok {
-				if current.String() != "" {
-					res.Set(attr, current.(values.String).Concat(values.SpaceString).Concat(str))
-				} else {
-					res.Set(attr, str)
-				}
+	for i := 0; i < count; i++ {
+		if i%2 != 0 {
+			if predicate(attrs[i-1], attrs[i]) == false {
+				break
 			}
 		}
 	}
-
-	return res
 }
 
 func setInnerHTML(ctx context.Context, client *cdp.Client, exec *eval.ExecutionContext, id HTMLElementIdentity, innerHTML values.String) error {
@@ -72,7 +53,7 @@ func setInnerHTML(ctx context.Context, client *cdp.Client, exec *eval.ExecutionC
 		objID = repl.Object.ObjectID
 	}
 
-	b, err := json.Marshal(innerHTML.String())
+	b, err := innerHTML.MarshalJSON()
 
 	if err != nil {
 		return err
@@ -83,7 +64,7 @@ func setInnerHTML(ctx context.Context, client *cdp.Client, exec *eval.ExecutionC
 			ObjectID: objID,
 		},
 		runtime.CallArgument{
-			Value: json.RawMessage(b),
+			Value: b,
 		},
 	)
 
@@ -148,7 +129,7 @@ func setInnerText(ctx context.Context, client *cdp.Client, exec *eval.ExecutionC
 		objID = repl.Object.ObjectID
 	}
 
-	b, err := json.Marshal(innerText.String())
+	b, err := innerText.MarshalJSON()
 
 	if err != nil {
 		return err
@@ -159,7 +140,7 @@ func setInnerText(ctx context.Context, client *cdp.Client, exec *eval.ExecutionC
 			ObjectID: objID,
 		},
 		runtime.CallArgument{
-			Value: json.RawMessage(b),
+			Value: b,
 		},
 	)
 
@@ -222,6 +203,7 @@ func createChildrenArray(nodes []dom.Node) []HTMLElementIdentity {
 
 	for idx, child := range nodes {
 		child := child
+
 		children[idx] = HTMLElementIdentity{
 			NodeID: child.NodeID,
 		}

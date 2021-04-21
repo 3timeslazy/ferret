@@ -1,0 +1,23 @@
+LET url = @lab.cdn.dynamic + "?redirect=/events"
+LET doc = DOCUMENT(url, true)
+LET pageSelector = "#page-events"
+LET elemSelector = "#wait-no-style-content"
+
+WAIT_ELEMENT(doc, pageSelector)
+
+LET el = ELEMENT(doc, elemSelector)
+LET prev = el.attributes.style
+
+ATTR_SET(el, "style", {
+    color: "black"
+})
+
+WAIT(200)
+
+LET curr = el.attributes.style
+
+PRINT(el.attributes.style)
+
+T::EQ(curr.color, "black")
+
+RETURN NONE

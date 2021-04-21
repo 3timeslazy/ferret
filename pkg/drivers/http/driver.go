@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"context"
+	"github.com/gobwas/glob"
 	"net/http"
 	"net/url"
 
@@ -26,18 +27,7 @@ func NewDriver(opts ...Option) *Driver {
 	drv := new(Driver)
 	drv.options = newOptions(opts)
 
-	if drv.options.Proxy == "" {
-		drv.client = pester.New()
-	} else {
-		client, err := newClientWithProxy(drv.options)
-
-		if err != nil {
-			drv.client = pester.New()
-		} else {
-			drv.client = pester.NewExtendedClient(client)
-		}
-	}
-
+	drv.client = newHTTPClient(drv.options)
 	drv.client.Concurrency = drv.options.Concurrency
 	drv.client.MaxRetries = drv.options.MaxRetries
 	drv.client.Backoff = drv.options.Backoff
@@ -45,17 +35,47 @@ func NewDriver(opts ...Option) *Driver {
 	return drv
 }
 
-func newClientWithProxy(options *Options) (*http.Client, error) {
-	proxyURL, err := url.Parse(options.Proxy)
+func newHTTPClient(options *Options) (httpClient *pester.Client) {
+	httpClient = pester.New()
 
+	if options.HTTPTransport != nil {
+		httpClient.Transport = options.HTTPTransport
+	}
+
+	if options.Proxy == "" {
+		return
+	}
+
+	if err := addProxy(httpClient, options.Proxy); err != nil {
+		return
+	}
+
+	httpClient = pester.NewExtendedClient(&http.Client{Transport: httpClient.Transport})
+
+	return
+}
+
+func addProxy(httpClient *pester.Client, proxyStr string) error {
+	if proxyStr == "" {
+		return nil
+	}
+
+	proxyURL, err := url.Parse(proxyStr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	proxy := http.ProxyURL(proxyURL)
-	tr := &http.Transport{Proxy: proxy}
 
-	return &http.Client{Transport: tr}, nil
+	if httpClient.Transport != nil {
+		httpClient.Transport.(*http.Transport).Proxy = proxy
+
+		return nil
+	}
+
+	httpClient.Transport = &http.Transport{Proxy: proxy}
+
+	return nil
 }
 
 func (drv *Driver) Name() string {
@@ -152,7 +172,13 @@ func (drv *Driver) Open(ctx context.Context, params drivers.Params) (drivers.HTM
 
 	defer resp.Body.Close()
 
-	if !drv.responseCodeAllowed(resp) {
+	var queryFilters []drivers.StatusCodeFilter
+
+	if params.Ignore != nil {
+		queryFilters = params.Ignore.StatusCodes
+	}
+
+	if !drv.responseCodeAllowed(resp, queryFilters) {
 		return nil, errors.New(resp.Status)
 	}
 
@@ -195,7 +221,43 @@ func (drv *Driver) Close() error {
 	return nil
 }
 
-func (drv *Driver) responseCodeAllowed(resp *http.Response) bool {
-	_, exists := drv.options.AllowedHTTPCodes[resp.StatusCode]
-	return exists
+func (drv *Driver) responseCodeAllowed(resp *http.Response, additional []drivers.StatusCodeFilter) bool {
+	var allowed bool
+	reqURL := resp.Request.URL.String()
+
+	// OK is by default
+	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+		return true
+	}
+
+	// Try to use those that are passed within a query
+	for _, filter := range additional {
+		allowed = filter.Code == resp.StatusCode
+
+		// check url
+		if allowed && filter.URL != "" {
+			allowed = glob.MustCompile(filter.URL).Match(reqURL)
+		}
+
+		if allowed {
+			break
+		}
+	}
+
+	// if still not allowed, try the default ones
+	if !allowed {
+		for _, filter := range drv.options.HTTPCodesFilter {
+			allowed = filter.Code == resp.StatusCode
+
+			if allowed && filter.URL != nil {
+				allowed = filter.URL.Match(reqURL)
+			}
+
+			if allowed {
+				break
+			}
+		}
+	}
+
+	return allowed
 }

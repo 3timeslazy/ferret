@@ -14,6 +14,7 @@ func RegisterLib(ns core.Namespace) error {
 	return ns.RegisterFunctions(
 		core.NewFunctionsFromMap(map[string]core.Function{
 			"ATTR_GET":          AttributeGet,
+			"ATTR_QUERY":        AttributeQuery,
 			"ATTR_REMOVE":       AttributeRemove,
 			"ATTR_SET":          AttributeSet,
 			"BLUR":              Blur,
@@ -23,11 +24,13 @@ func RegisterLib(ns core.Namespace) error {
 			"CLICK":             Click,
 			"CLICK_ALL":         ClickAll,
 			"DOCUMENT":          Open,
+			"DOCUMENT_EXISTS":   DocumentExists,
 			"DOWNLOAD":          Download,
 			"ELEMENT":           Element,
 			"ELEMENT_EXISTS":    ElementExists,
 			"ELEMENTS":          Elements,
 			"ELEMENTS_COUNT":    ElementsCount,
+			"FRAMES":            Frames,
 			"FOCUS":             Focus,
 			"HOVER":             Hover,
 			"INNER_HTML":        GetInnerHTML,

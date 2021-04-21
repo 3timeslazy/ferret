@@ -193,10 +193,6 @@ func (doc *HTMLDocument) Frame() page.FrameTree {
 	return doc.frameTree
 }
 
-func (doc *HTMLDocument) IsDetached() values.Boolean {
-	return doc.element.IsDetached()
-}
-
 func (doc *HTMLDocument) GetNodeType() values.Int {
 	return 9
 }
@@ -456,6 +452,10 @@ func (doc *HTMLDocument) ScrollBySelector(ctx context.Context, selector values.S
 
 func (doc *HTMLDocument) ScrollByXY(ctx context.Context, x, y values.Float, options drivers.ScrollOptions) error {
 	return doc.input.ScrollByXY(ctx, float64(x), float64(y), options)
+}
+
+func (doc *HTMLDocument) Eval(ctx context.Context, expression string) (core.Value, error) {
+	return doc.exec.EvalWithReturnValue(ctx, expression)
 }
 
 func (doc *HTMLDocument) logError(err error) *zerolog.Event {

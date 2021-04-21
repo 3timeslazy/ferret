@@ -1,9 +1,11 @@
 package core
 
 import (
+	"context"
 	"math"
 	"math/rand"
 	"reflect"
+	"time"
 )
 
 func IsNil(input interface{}) bool {
@@ -44,10 +46,34 @@ func NumberLowerBoundary(input float64) float64 {
 	return input / 2
 }
 
+func RandomDefault() float64 {
+	rand.Seed(time.Now().UnixNano())
+
+	return rand.Float64()
+}
+
 func Random(max float64, min float64) float64 {
-	r := rand.Float64()
+	r := RandomDefault()
 	i := r * (max - min + 1)
 	out := math.Floor(i) + min
 
 	return out
+}
+
+func ForEach(ctx context.Context, iter Iterator, predicate func(value Value, key Value) bool) error {
+	for {
+		value, key, err := iter.Next(ctx)
+
+		if err != nil {
+			if IsNoMoreData(err) {
+				return nil
+			}
+
+			return err
+		}
+
+		if !predicate(value, key) {
+			return nil
+		}
+	}
 }

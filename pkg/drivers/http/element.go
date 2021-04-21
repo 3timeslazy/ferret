@@ -2,18 +2,18 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"hash/fnv"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/antchfx/htmlquery"
+	"github.com/antchfx/xpath"
+	"github.com/wI2L/jettison"
 
 	"github.com/MontFerret/ferret/pkg/drivers"
 	"github.com/MontFerret/ferret/pkg/drivers/common"
 	"github.com/MontFerret/ferret/pkg/runtime/core"
 	"github.com/MontFerret/ferret/pkg/runtime/values"
-
-	"github.com/PuerkitoBio/goquery"
-	"github.com/antchfx/htmlquery"
-	"github.com/antchfx/xpath"
 )
 
 type HTMLElement struct {
@@ -32,7 +32,7 @@ func NewHTMLElement(node *goquery.Selection) (drivers.HTMLElement, error) {
 }
 
 func (el *HTMLElement) MarshalJSON() ([]byte, error) {
-	return json.Marshal(el.String())
+	return jettison.MarshalOpts(el.String(), jettison.NoHTMLEscaping())
 }
 
 func (el *HTMLElement) Type() core.Type {
@@ -84,10 +84,6 @@ func (el *HTMLElement) Copy() core.Value {
 	c, _ := NewHTMLElement(el.selection.Clone())
 
 	return c
-}
-
-func (el *HTMLElement) IsDetached() values.Boolean {
-	return values.True
 }
 
 func (el *HTMLElement) GetNodeType() values.Int {
@@ -174,7 +170,7 @@ func (el *HTMLElement) GetStyle(ctx context.Context, name values.String) (core.V
 	return el.styles.MustGet(name), nil
 }
 
-func (el *HTMLElement) SetStyle(ctx context.Context, name values.String, value core.Value) error {
+func (el *HTMLElement) SetStyle(ctx context.Context, name, value values.String) error {
 	if err := el.ensureStyles(ctx); err != nil {
 		return err
 	}
@@ -248,14 +244,22 @@ func (el *HTMLElement) GetAttributes(_ context.Context) (*values.Object, error) 
 	return el.attrs.Copy().(*values.Object), nil
 }
 
-func (el *HTMLElement) GetAttribute(_ context.Context, name values.String) (core.Value, error) {
+func (el *HTMLElement) GetAttribute(ctx context.Context, name values.String) (core.Value, error) {
 	el.ensureAttrs()
+
+	if name == common.AttrNameStyle {
+		return el.GetStyles(ctx)
+	}
 
 	return el.attrs.MustGet(name), nil
 }
 
 func (el *HTMLElement) SetAttribute(_ context.Context, name, value values.String) error {
 	el.ensureAttrs()
+
+	if name == common.AttrNameStyle {
+		el.styles = nil
+	}
 
 	el.attrs.Set(name, value)
 	el.selection.SetAttr(string(name), string(value))
@@ -489,6 +493,36 @@ func (el *HTMLElement) Iterate(_ context.Context) (core.Iterator, error) {
 	return common.NewIterator(el)
 }
 
+func (el *HTMLElement) GetParentElement(_ context.Context) (core.Value, error) {
+	parent := el.selection.Parent()
+
+	if parent == nil {
+		return values.None, nil
+	}
+
+	return NewHTMLElement(parent)
+}
+
+func (el *HTMLElement) GetPreviousElementSibling(_ context.Context) (core.Value, error) {
+	sibling := el.selection.Prev()
+
+	if sibling == nil {
+		return values.None, nil
+	}
+
+	return NewHTMLElement(sibling)
+}
+
+func (el *HTMLElement) GetNextElementSibling(_ context.Context) (core.Value, error) {
+	sibling := el.selection.Next()
+
+	if sibling == nil {
+		return values.None, nil
+	}
+
+	return NewHTMLElement(sibling)
+}
+
 func (el *HTMLElement) Click(_ context.Context, _ values.Int) error {
 	return core.ErrNotSupported
 }
@@ -608,12 +642,14 @@ func (el *HTMLElement) ensureAttrs() {
 func (el *HTMLElement) parseAttrs() *values.Object {
 	obj := values.NewObject()
 
-	for _, name := range common.Attributes {
-		val, ok := el.selection.Attr(name)
+	if len(el.selection.Nodes) == 0 {
+		return obj
+	}
 
-		if ok {
-			obj.Set(values.NewString(name), values.NewString(val))
-		}
+	node := el.selection.Nodes[0]
+
+	for _, attr := range node.Attr {
+		obj.Set(values.NewString(attr.Key), values.NewString(attr.Val))
 	}
 
 	return obj

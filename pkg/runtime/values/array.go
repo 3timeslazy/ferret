@@ -3,9 +3,10 @@ package values
 import (
 	"context"
 	"encoding/binary"
-	"encoding/json"
 	"hash/fnv"
 	"sort"
+
+	"github.com/wI2L/jettison"
 
 	"github.com/MontFerret/ferret/pkg/runtime/core"
 	"github.com/MontFerret/ferret/pkg/runtime/values/types"
@@ -21,6 +22,10 @@ type (
 	}
 )
 
+func EmptyArray() *Array {
+	return &Array{items: make([]core.Value, 0, 0)}
+}
+
 func NewArray(size int) *Array {
 	return &Array{items: make([]core.Value, 0, size)}
 }
@@ -30,7 +35,7 @@ func NewArrayWith(values ...core.Value) *Array {
 }
 
 func (t *Array) MarshalJSON() ([]byte, error) {
-	return json.Marshal(t.items)
+	return jettison.MarshalOpts(t.items, jettison.NoHTMLEscaping())
 }
 
 func (t *Array) Type() core.Type {
@@ -136,7 +141,19 @@ func (t *Array) ForEach(predicate ArrayPredicate) {
 	}
 }
 
-func (t *Array) Find(predicate ArrayPredicate) (core.Value, Boolean) {
+func (t *Array) Find(predicate ArrayPredicate) (*Array, Boolean) {
+	result := NewArray(len(t.items))
+
+	for idx, val := range t.items {
+		if predicate(val, idx) {
+			result.Push(val)
+		}
+	}
+
+	return result, result.Length() > 0
+}
+
+func (t *Array) FindOne(predicate ArrayPredicate) (core.Value, Boolean) {
 	for idx, val := range t.items {
 		if predicate(val, idx) {
 			return val, True

@@ -1,12 +1,14 @@
 package events
 
 import (
-	"github.com/MontFerret/ferret/pkg/runtime/core"
+	"errors"
 	"sync"
+
+	"github.com/MontFerret/ferret/pkg/runtime/core"
 )
 
 type SourceCollection struct {
-	mu     sync.Mutex
+	mu     sync.RWMutex
 	values []Source
 }
 
@@ -21,6 +23,10 @@ func (sc *SourceCollection) Close() error {
 	sc.mu.Lock()
 	defer sc.mu.Unlock()
 
+	if sc.values == nil {
+		return errors.New("sources are already closed")
+	}
+
 	errs := make([]error, 0, len(sc.values))
 
 	for _, e := range sc.values {
@@ -28,6 +34,8 @@ func (sc *SourceCollection) Close() error {
 			errs = append(errs, err)
 		}
 	}
+
+	sc.values = nil
 
 	if len(errs) > 0 {
 		return core.Errors(errs...)
@@ -37,15 +45,15 @@ func (sc *SourceCollection) Close() error {
 }
 
 func (sc *SourceCollection) Size() int {
-	sc.mu.Lock()
-	defer sc.mu.Unlock()
+	sc.mu.RLock()
+	defer sc.mu.RUnlock()
 
 	return len(sc.values)
 }
 
 func (sc *SourceCollection) Get(idx int) (Source, error) {
-	sc.mu.Lock()
-	defer sc.mu.Unlock()
+	sc.mu.RLock()
+	defer sc.mu.RUnlock()
 
 	if len(sc.values) <= idx {
 		return nil, core.ErrNotFound

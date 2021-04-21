@@ -61,7 +61,7 @@ func GetInPage(ctx context.Context, page drivers.HTMLPage, path []core.Value) (c
 
 			return GetInDocument(ctx, frame, path[2:])
 		case "url", "URL":
-			return page.GetMainFrame().GetURL(), nil
+			return page.GetURL(), nil
 		case "cookies":
 			cookies, err := page.GetCookies(ctx)
 
@@ -74,10 +74,10 @@ func GetInPage(ctx context.Context, page drivers.HTMLPage, path []core.Value) (c
 			}
 
 			return cookies.GetIn(ctx, path[1:])
-		case "isClosed":
-			return page.IsClosed(), nil
 		case "title":
 			return page.GetMainFrame().GetTitle(), nil
+		case "isClosed":
+			return page.IsClosed(), nil
 		default:
 			return GetInDocument(ctx, page.GetMainFrame(), path)
 		}
@@ -194,6 +194,12 @@ func GetInElement(ctx context.Context, el drivers.HTMLElement, path []core.Value
 			}
 
 			return values.GetIn(ctx, styles, path[1:])
+		case "previousElementSibling":
+			return el.GetPreviousElementSibling(ctx)
+		case "nextElementSibling":
+			return el.GetNextElementSibling(ctx)
+		case "parentElement":
+			return el.GetParentElement(ctx)
 		default:
 			return GetInNode(ctx, el, path)
 		}
@@ -224,8 +230,6 @@ func GetInNode(ctx context.Context, node drivers.HTMLNode, path []core.Value) (c
 		segment := segment.(values.String)
 
 		switch segment {
-		case "isDetached":
-			return node.IsDetached(), nil
 		case "nodeType":
 			return node.GetNodeType(), nil
 		case "nodeName":

@@ -3,15 +3,15 @@ package eval
 import (
 	"context"
 	"fmt"
-	"github.com/MontFerret/ferret/pkg/drivers"
-	"github.com/mafredri/cdp/protocol/dom"
 	"strings"
 
 	"github.com/mafredri/cdp"
+	"github.com/mafredri/cdp/protocol/dom"
 	"github.com/mafredri/cdp/protocol/page"
 	"github.com/mafredri/cdp/protocol/runtime"
 	"github.com/pkg/errors"
 
+	"github.com/MontFerret/ferret/pkg/drivers"
 	"github.com/MontFerret/ferret/pkg/runtime/core"
 	"github.com/MontFerret/ferret/pkg/runtime/values"
 )
@@ -22,6 +22,16 @@ type ExecutionContext struct {
 	client    *cdp.Client
 	frame     page.Frame
 	contextID runtime.ExecutionContextID
+}
+
+func NewExecutionContextFrom(ctx context.Context, client *cdp.Client, frame page.Frame) (*ExecutionContext, error) {
+	world, err := client.Page.CreateIsolatedWorld(ctx, page.NewCreateIsolatedWorldArgs(frame.ID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewExecutionContext(client, frame, world.ExecutionContextID), nil
 }
 
 func NewExecutionContext(client *cdp.Client, frame page.Frame, contextID runtime.ExecutionContextID) *ExecutionContext {

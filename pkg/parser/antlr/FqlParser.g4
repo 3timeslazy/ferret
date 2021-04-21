@@ -1,3 +1,5 @@
+// $antlr-format off <-- used by VS Code Antlr extension
+
 parser grammar FqlParser;
 
 options { tokenVocab=FqlLexer; }
@@ -10,7 +12,6 @@ head
     : useExpression
     ;
 
-// TODO: add useAs expession
 useExpression
     : use
     ;
@@ -41,6 +42,9 @@ returnExpression
 
 forExpression
     : For forExpressionValueVariable (Comma forExpressionKeyVariable)? In forExpressionSource
+     (forExpressionBody)*
+      forExpressionReturn
+    | For forExpressionValueVariable (Do)? While expression
      (forExpressionBody)*
       forExpressionReturn
     ;
@@ -260,6 +264,8 @@ member
     : Identifier
     | functionCallExpression
     | param
+    | objectLiteral
+    | arrayLiteral
     ;
 
 memberPath
@@ -283,6 +289,7 @@ expression
     | expressionGroup
     | expression arrayOperator (inOperator | equalityOperator) expression
     | expression inOperator expression
+    | expression likeOperator expression
     | expression equalityOperator expression
     | expression regexpOperator expression
     | expression logicalAndOperator expression
@@ -316,6 +323,11 @@ arrayOperator
 inOperator
     : In
     | Not In
+    ;
+
+likeOperator
+    : Like
+    | Not Like
     ;
 
 equalityOperator
@@ -355,5 +367,4 @@ unaryOperator
     : Not
     | Plus
     | Minus
-    | Like
     ;

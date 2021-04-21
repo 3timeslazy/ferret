@@ -1,4 +1,0 @@
-LET url = @dynamic
-LET doc = DOCUMENT(url, true)
-
-RETURN EXPECT(doc.response.status, "OK")

@@ -4,11 +4,12 @@ import (
 	"context"
 	"hash/fnv"
 
+	"github.com/PuerkitoBio/goquery"
+
 	"github.com/MontFerret/ferret/pkg/drivers"
 	"github.com/MontFerret/ferret/pkg/drivers/common"
 	"github.com/MontFerret/ferret/pkg/runtime/core"
 	"github.com/MontFerret/ferret/pkg/runtime/values"
-	"github.com/PuerkitoBio/goquery"
 )
 
 type HTMLDocument struct {
@@ -175,10 +176,6 @@ func (doc *HTMLDocument) ExistsBySelector(ctx context.Context, selector values.S
 
 func (doc *HTMLDocument) XPath(ctx context.Context, expression values.String) (core.Value, error) {
 	return doc.element.XPath(ctx, expression)
-}
-
-func (doc *HTMLDocument) IsDetached() values.Boolean {
-	return values.False
 }
 
 func (doc *HTMLDocument) GetTitle() values.String {

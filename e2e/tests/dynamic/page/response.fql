@@ -1,0 +1,4 @@
+LET url = @lab.cdn.dynamic
+LET doc = DOCUMENT(url, true)
+
+RETURN T::EQ(doc.response.status, "OK")

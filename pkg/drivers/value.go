@@ -24,8 +24,6 @@ type (
 		collections.Measurable
 		io.Closer
 
-		IsDetached() values.Boolean
-
 		GetNodeType() values.Int
 
 		GetNodeName() values.String
@@ -67,7 +65,7 @@ type (
 
 		SetStyles(ctx context.Context, values *values.Object) error
 
-		SetStyle(ctx context.Context, name values.String, value core.Value) error
+		SetStyle(ctx context.Context, name, value values.String) error
 
 		RemoveStyle(ctx context.Context, name ...values.String) error
 
@@ -92,6 +90,12 @@ type (
 		SetInnerTextBySelector(ctx context.Context, selector, innerText values.String) error
 
 		GetInnerTextBySelectorAll(ctx context.Context, selector values.String) (*values.Array, error)
+
+		GetPreviousElementSibling(ctx context.Context) (core.Value, error)
+
+		GetNextElementSibling(ctx context.Context) (core.Value, error)
+
+		GetParentElement(ctx context.Context) (core.Value, error)
 
 		Click(ctx context.Context, count values.Int) error
 
@@ -205,6 +209,8 @@ type (
 		CaptureScreenshot(ctx context.Context, params ScreenshotParams) (values.Binary, error)
 
 		WaitForNavigation(ctx context.Context, targetURL values.String) error
+
+		WaitForFrameNavigation(ctx context.Context, frame HTMLDocument, targetURL values.String) error
 
 		Navigate(ctx context.Context, url values.String) error
 

@@ -18,7 +18,7 @@ install:
 	go get
 
 compile:
-	go build -v -o ${DIR_BIN}/ferret \
+	go build -race -v -o ${DIR_BIN}/ferret \
 	-ldflags "-X main.version=${VERSION}" \
 	./main.go
 
@@ -30,8 +30,7 @@ cover:
 	curl -s https://codecov.io/bash | bash
 
 e2e:
-	go run ${DIR_E2E}/main.go --tests ${DIR_E2E}/tests --pages ${DIR_E2E}/pages
-	# --filter=e2e/tests/dynamic/element/inner_text/get_by_selector.fql
+	lab --timeout=120 --times=5 --concurrency=1 --wait=http://127.0.0.1:9222/json/version --runtime=bin://./bin/ferret --files=./e2e/tests --cdn=./e2e/pages/dynamic --cdn=./e2e/pages/static
 
 bench:
 	go test -run=XXX -bench=. ${DIR_PKG}/...

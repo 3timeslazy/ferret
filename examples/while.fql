@@ -1,0 +1,17 @@
+LET doc = DOCUMENT("https://github.com/MontFerret/ferret/stargazers", { driver: "cdp" })
+
+LET nextSelector = ".paginate-container .BtnGroup a:nth-child(2)"
+LET elementsSelector = '.follow-list li'
+
+FOR i DO WHILE ELEMENT_EXISTS(doc, nextSelector)
+    LIMIT 3
+	LET wait = i > 0 ? CLICK(doc, nextSelector) : false
+	LET nav = wait ? WAIT_NAVIGATION(doc) : false
+	
+	FOR el IN ELEMENTS(doc, elementsSelector)
+		FILTER ELEMENT_EXISTS(el, ".octicon-organization")
+
+		RETURN {
+			name: INNER_TEXT(el, ".follow-list-name"),
+			company: INNER_TEXT(el, ".follow-list-info span")
+		}

@@ -1,5 +1,65 @@
 ## Changelog
 
+### 0.14.0
+#### Added
+- Support of History API [#584](https://github.com/MontFerret/ferret/pull/584)
+- Support of custom http transport in HTTP driver [#586](https://github.com/MontFerret/ferret/pull/586)
+- ``LIKE`` operator [#591](https://github.com/MontFerret/ferret/pull/591)
+- Support of ignoring page resources [#592](https://github.com/MontFerret/ferret/pull/592)
+- Support of handling non-200 status codes in HTTP driver [#593](https://github.com/MontFerret/ferret/pull/593)
+- ``DOCUMENT_EXISTS`` function [#594](https://github.com/MontFerret/ferret/pull/594)
+
+#### Fixed
+- ``RAND(0,100)`` always same result [#579](https://github.com/MontFerret/ferret/pull/579)
+- Element.children always returns empty array [#580](https://github.com/MontFerret/ferret/pull/580)
+- Passing parameters with a nested nil structure leads to panic [#587](https://github.com/MontFerret/ferret/pull/587)
+
+### 0.13.0
+#### Added
+- ``WHILE`` loop and ``ATTR_QUERY`` function [#567](https://github.com/MontFerret/ferret/pull/567)
+- Support of Element.nextElementSibling and Element.previousElement [#569](https://github.com/MontFerret/ferret/pull/569)
+- Support of Element.getParentElement [#571](https://github.com/MontFerret/ferret/pull/571)
+- Support of computed styles [#570](https://github.com/MontFerret/ferret/pull/570)
+
+#### Fixed
+- HTML escaping [#573](https://github.com/MontFerret/ferret/pull/573)
+
+#### Updated 
+- Upgraded CDP client [#536](https://github.com/MontFerret/ferret/pull/563)
+- Upgraded GoQuery [#562](https://github.com/MontFerret/ferret/pull/562)
+- Upgraded XPath [#572](https://github.com/MontFerret/ferret/pull/572)
+
+### 0.12.1
+#### Fixed
+- Missing regexp FILTER operator [#558](https://github.com/MontFerret/ferret/pull/558)
+- Open tabs on page load error [#564](https://github.com/MontFerret/ferret/pull/564)
+- Docs for WAIT_NAVIGATION [#557](https://github.com/MontFerret/ferret/pull/557)
+
+### 0.12.0
+#### Added
+- iFrame navigation handling [#535](https://github.com/MontFerret/ferret/pull/535)
+- ``FRAMES`` function for fast frame lookup [#535](https://github.com/MontFerret/ferret/pull/535)
+- Assertion library [#526](https://github.com/MontFerret/ferret/pull/526)
+
+#### Changed
+- Removed property caching and tracking [#531](https://github.com/MontFerret/ferret/pull/531)
+- Updated dependencies [#528](https://github.com/MontFerret/ferret/pull/528), [#525](https://github.com/MontFerret/ferret/pull/525)
+- ``IO::FS::WRITE`` accepts any type as a file content [#544](https://github.com/MontFerret/ferret/pull/544)
+- Print errors on stderr [#539](https://github.com/MontFerret/ferret/pull/539)
+
+#### Fixed
+- ``WAIT`` does not respect cancellation signal [#524](https://github.com/MontFerret/ferret/pull/524)
+- Missed ``DATE_COMPARE`` [#537](https://github.com/MontFerret/ferret/pull/537)
+- Spelling [#534](https://github.com/MontFerret/ferret/pull/534)
+- ``SCREENSHOT`` param type check [#545](https://github.com/MontFerret/ferret/pull/545)
+- Wrong base for int formatter [e283722](https://github.com/MontFerret/ferret/commit/e283722d37f392f755ace2a42232c0d4b37d1838)
+
+### 0.11.1
+#### Fixed
+- Fixed use of unquoted scroll options [#521](https://github.com/MontFerret/ferret/pull/521)
+- Upgraded ANTLR version [#517](https://github.com/MontFerret/ferret/pull/517)
+
+
 ### 0.11.0
 #### Added
 - USE statement. [#470](https://github.com/MontFerret/ferret/pull/470)
@@ -29,10 +89,10 @@
 ### 0.10.0
 #### Added
 - Response information to drivers. [#391](https://github.com/MontFerret/ferret/pull/391), [#450](https://github.com/MontFerret/ferret/pull/450)
-- Сompilation check whether parameter values are provided. [#396](https://github.com/MontFerret/ferret/pull/396)
+- Compilation check whether parameter values are provided. [#396](https://github.com/MontFerret/ferret/pull/396)
 - Allowed HTTP response codes to HTTP driver. [#398](https://github.com/MontFerret/ferret/pull/398)
 - IO functions to standard library. [#403](https://github.com/MontFerret/ferret/pull/403), [#405](https://github.com/MontFerret/ferret/pull/405), [#452](https://github.com/MontFerret/ferret/pull/452)
-- Сompilation check whether a variable name is unique. [#416](https://github.com/MontFerret/ferret/pull/416)
+- Compilation check whether a variable name is unique. [#416](https://github.com/MontFerret/ferret/pull/416)
 - Loading HTML page into memory. Supported by all drivers. [#413](https://github.com/MontFerret/ferret/pull/434)
 
 #### Fixed

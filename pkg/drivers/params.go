@@ -1,6 +1,21 @@
 package drivers
 
 type (
+	ResourceFilter struct {
+		URL  string
+		Type string
+	}
+
+	StatusCodeFilter struct {
+		URL  string
+		Code int
+	}
+
+	Ignore struct {
+		Resources   []ResourceFilter
+		StatusCodes []StatusCodeFilter
+	}
+
 	Viewport struct {
 		Height      int
 		Width       int
@@ -16,6 +31,7 @@ type (
 		Cookies     HTTPCookies
 		Headers     HTTPHeaders
 		Viewport    *Viewport
+		Ignore      *Ignore
 	}
 
 	ParseParams struct {
